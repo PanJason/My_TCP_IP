@@ -4,7 +4,7 @@ cmake CMakeLists.txt
 make
 ```
 
-# how to test it using the given network topology
+## how to test it using the given network topology
 ```
 sudo bash ./makeVNet < example.txt
 cd ./test

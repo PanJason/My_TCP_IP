@@ -8,11 +8,14 @@ make
 ```
 sudo bash ./makeVNet < example.txt
 
-#Disable kernel stack for both devices.
+#Disable kernel stack for all devices.
 
-cd ./test
-./ipServer veth2-1  #start capturing on veth2-1.
-./ipClient veth1-2 <IP address in dot format> <Message you want to send>
+./tcptest_server 80 #start an echo server on port 80 on ns3
+./ipRouter #start a router on ns2
+./tcptest_client 10.100.2.2 80 #start an echo client on ns1. The 
+client will connect to 10.100.2.2 port 80.
+#Then you can type in any message you want to echo.
+#Enable kernel stack for all devices. 
 sudo bash ./removeVNet < example.txt
 ```
 

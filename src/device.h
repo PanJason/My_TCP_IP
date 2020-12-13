@@ -4,20 +4,26 @@
 #include "packetio.h"
 #include <string>
 #include <pcap/pcap.h>
+#include <vector>
 
 namespace pan_protocol_stack{
+
 namespace device{
 	const size_t BUF_SIZE = 65536;
 	const size_t TIMEOUT = 10;
+struct mac_wapper{
+    ethernet::mac_addr data;
+};
 struct device_t{
     std::string device_name;
 	ethernet::mac_addr mac_address;
     int id;
     pcap_t* pcap_handler;
+    std::vector<uint32_t> ip_addrs;
     device_t();
     ~device_t();
 	int create_pcap_handler();
-
+    int read();
 };
 /**
  * Add a device to the library for sending/receiving packets. 
@@ -41,6 +47,11 @@ int findDevice(const char* device);
  * @return a reference to that device handler
  */
 device_t& get_device_handler(int id);
+int epoll_init();
+int epoll_read(int timeout);
+void epoll_server_init();
+void epoll_server(int timeout);
+
 }
 }
 

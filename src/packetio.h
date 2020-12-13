@@ -76,6 +76,8 @@ namespace pan_protocol_stack {
 		 * @return MAC address in string format.
 		 */
 		std::string mac2string(const mac_addr addr);
+
+		int ether_broker_callback(const void* frame, int len, int dev_id);
 	}
 }
 

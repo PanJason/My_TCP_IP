@@ -19,7 +19,7 @@ namespace ethernet {
 	int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id) {
 		auto &device = device::get_device_handler(id);
 		int frame_len = ETH_HEADER_LEN + len + CRC_LEN;
-		uint8_t* frame_buf = new uint8_t[frame_len];
+		uint8_t* frame_buf = (uint8_t *)malloc(frame_len);
 		auto eptr = (struct ether_header*)frame_buf;
 		memcpy(eptr->ether_dhost, destmac, MAC_LEN);
 		memcpy(eptr->ether_shost, device.mac_address, MAC_LEN);
@@ -27,9 +27,14 @@ namespace ethernet {
 		frame_buf[2 * MAC_LEN + 1] = ethtype & 0xFF;
 		memcpy(frame_buf + ETH_HEADER_LEN, buf, len);
 		if (pcap_sendpacket(device.pcap_handler, frame_buf, frame_len) != 0) {
+			free(frame_buf);
 			return -1;
 		}
-		return 0;
+		else
+		{
+			free(frame_buf);
+			return 0;
+		}
 	}
 
 	int print_callback(const void* frame, int len, int dev_id){
@@ -86,11 +91,15 @@ namespace ethernet {
 				std::cerr<<"Timeout!"<<std::endl;
 			}
 			int ret = core_data::get().ethernet_callback(packet, hdr->len,dev_id);
-			if (ret<0) return -1;			
+			if (ret<0) {
+				std::cerr<<"Anomaly"<<std::endl;
+			}		
 		}
 		if (res<0) return -1;
 		return 0;
 	}
+
+	
 
 	std::string mac2string(const mac_addr addr){
 		std::ostringstream os;
@@ -101,6 +110,31 @@ namespace ethernet {
 			}
 		}
 		return os.str();
+	}
+
+	int ether_broker_callback(const void* frame, int len, int dev_id){
+		auto eptr = (struct ether_header*)frame;
+		auto &d = device::get_device_handler(dev_id);
+		auto packetPtr = ((uint8_t *)frame) + sizeof(ether_header);
+		auto packetLen = len - sizeof(ether_header) - CRC_LEN;
+		uint16_t e_type = ntohs(eptr->ether_type);
+		ethernet::mac_addr srcMAC;
+		memcpy(srcMAC, eptr->ether_shost,sizeof(ethernet::mac_addr));
+		ethernet::mac_addr dstMAC;
+		memcpy(dstMAC, eptr->ether_dhost, sizeof(ethernet::mac_addr));
+		if(e_type == ETHERTYPE_IP){
+			if(!memcmp(dstMAC, d.mac_address, sizeof(ethernet::mac_addr))||
+			!memcmp(dstMAC, ETHERNET_BROADCAST, sizeof(ethernet::mac_addr))){
+				int ret = core_data::get().ip_callback(packetPtr, packetLen, dev_id, -1, srcMAC);
+				return ret;
+			}
+			std::cerr<<"Packet not belong to this device!"<<std::endl;
+			std::cerr<<"Src MAC address is "<<mac2string(srcMAC)<<std::endl;
+			std::cerr<<"Dst MAC address is "<<mac2string(dstMAC)<<std::endl;
+			return -1;
+		}
+		std::cerr<<"Not IP packet! The type is "<<(unsigned)e_type<<std::endl;
+		return -1;
 	}
 }
 }

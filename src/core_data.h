@@ -3,6 +3,8 @@
 
 
 #include "device.h"
+#include "ip.h"
+#include "socket.h"
 
 #include <vector>
 #include <future>
@@ -12,7 +14,9 @@ namespace pan_protocol_stack{
 namespace core_data{
     struct core{
         std::vector<std::shared_ptr<device::device_t> > devices;
+        tcp::TCP_stack* runningTCP = nullptr;
         ethernet::frameReceiveCallback ethernet_callback;
+        ip::IPPacketReceiveCallback ip_callback;
     };
     core &get();
 }

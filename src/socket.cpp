@@ -285,8 +285,8 @@ int TCP_stack::TCPSegmentReceiveCallback(char *buffer, size_t len, ip::ip_addr i
                 *checksum =0;
                 *urgentPointer =0;
                 //checksum not implemented yet;
-                *checksum = htons(TCPchecksum(to.ipAddress(), from.ipAddress(),
-                (uint16_t *)packetPtr, 20));
+                *checksum = TCPchecksum(to.ipAddress(), from.ipAddress(),
+                (uint16_t *)packetPtr, 20);
                 uint16_t id = (genSeq() & 0xffff);
                 ip::sendIPPacket(to.ipAddress(),from.ipAddress(),
                 6,0,id,2,0,64,packetPtr,20);
@@ -315,8 +315,8 @@ int TCP_stack::TCPSegmentReceiveCallback(char *buffer, size_t len, ip::ip_addr i
                 *checksum =0;
                 *urgentPointer =0;
                 //checksum not implemented yet;
-                *checksum = htons(TCPchecksum(to.ipAddress(), from.ipAddress(),
-                (uint16_t *)packetPtr, 20));
+                *checksum = TCPchecksum(to.ipAddress(), from.ipAddress(),
+                (uint16_t *)packetPtr, 20);
                 uint16_t id = (genSeq() & 0xffff);
                 ip::sendIPPacket(to.ipAddress(),from.ipAddress(),
                 6,0,id,2,0,64,packetPtr,20);
